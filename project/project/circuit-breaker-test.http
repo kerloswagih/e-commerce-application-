@@ -1,0 +1,90 @@
+### Circuit Breaker Test Endpoints
+
+### 1. Check initial status (Circuit should be CLOSED)
+GET http://localhost:8083/api/v1/circuit-breaker-test/status
+
+###
+
+### 2. Make successful call (No failures yet)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/1
+
+###
+
+### 3. Enable failure simulation (All calls will fail)
+POST http://localhost:8083/api/v1/circuit-breaker-test/simulate-failure/enable
+
+###
+
+### 4. Make call 1 (Fails)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/1
+
+###
+
+### 5. Make call 2 (Fails)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/2
+
+###
+
+### 6. Make call 3 (Fails)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/3
+
+###
+
+### 7. Make call 4 (Fails)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/4
+
+###
+
+### 8. Make call 5 (Fails - Circuit should OPEN now)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/5
+
+###
+
+### 9. Check status (Circuit should be OPEN)
+GET http://localhost:8083/api/v1/circuit-breaker-test/status
+
+###
+
+### 10. Try call while OPEN (Should fail immediately)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/1
+
+###
+
+### 11. Disable failure simulation (Allow recovery)
+POST http://localhost:8083/api/v1/circuit-breaker-test/simulate-failure/disable
+
+###
+
+### 12. Wait 10 seconds, then check status (Circuit should be HALF_OPEN)
+GET http://localhost:8083/api/v1/circuit-breaker-test/status
+
+###
+
+### 13. Make test call in HALF_OPEN state (Success)
+GET http://localhost:8083/api/v1/circuit-breaker-test/user-service/1
+
+###
+
+### 14. Check status (Circuit should be CLOSED again)
+GET http://localhost:8083/api/v1/circuit-breaker-test/status
+
+###
+
+### 15. Get detailed metrics
+GET http://localhost:8083/api/v1/circuit-breaker-test/metrics
+
+###
+
+### 16. Reset all circuit breakers
+POST http://localhost:8083/api/v1/circuit-breaker-test/reset
+
+###
+
+### 17. Check Actuator Health (includes circuit breaker status)
+GET http://localhost:8083/api/actuator/health
+
+###
+
+### 18. Check Actuator Metrics
+GET http://localhost:8083/api/actuator/metrics
+

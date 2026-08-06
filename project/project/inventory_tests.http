@@ -1,0 +1,173 @@
+### Variables
+@host = http://localhost:8080
+@base = {{host}}/api/v1/inventory
+@random = {{$random.uuid}}
+@email = test.user.{{random}}@example.com
+@password = pass123
+
+############################################################
+### Register User
+############################################################
+
+POST {{host}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "firstName": "Test",
+  "lastName": "User",
+  "password": "{{password}}"
+}
+
+> {%
+    client.test("Register succeeded", function () {
+        client.assert(response.status === 200 || response.status === 201);
+    });
+%}
+
+############################################################
+### Login
+############################################################
+
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+    client.test("Login successful", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+############################################################
+### Create Product
+############################################################
+
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "TEST-{{$random.uuid}}",
+  "name": "Test Product",
+  "description": "Inventory test product"
+}
+
+> {%
+    client.global.set("productId", response.body.id);
+
+    client.test("Product created", function () {
+        client.assert(response.status === 200 || response.status === 201);
+    });
+%}
+
+############################################################
+### Add Inventory (+50)
+############################################################
+
+POST {{base}}/products/{{productId}}/adjust
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "delta": 50,
+  "reason": "initial stock"
+}
+
+> {%
+    client.test("Inventory adjusted", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+############################################################
+### Get Inventory Level
+############################################################
+
+GET {{base}}/products/{{productId}}/level
+Authorization: Bearer {{token}}
+
+> {%
+    client.test("Inventory retrieved", function () {
+        client.assert(response.status === 200);
+    });
+%}
+
+############################################################
+### Reserve 5 Items
+############################################################
+
+POST {{base}}/products/{{productId}}/reserve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "requestId": "REQ-{{$random.uuid}}",
+  "orderId": "ORD-TEST",
+  "quantity": 5
+}
+
+> {%
+    client.test("Reservation succeeded", function () {
+        client.assert(response.body.success === true);
+    });
+%}
+
+############################################################
+### Get Level After Reserve
+############################################################
+
+GET {{base}}/products/{{productId}}/level
+Authorization: Bearer {{token}}
+
+############################################################
+### Release Reservation
+############################################################
+
+POST {{base}}/products/{{productId}}/release
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "requestId": "REQ-1",
+  "orderId": "ORD-TEST",
+  "quantity": 5
+}
+
+> {%
+    client.test("Release succeeded", function () {
+        client.assert(response.body.success === true);
+    });
+%}
+
+############################################################
+### Negative Test
+############################################################
+
+POST {{base}}/products/{{productId}}/reserve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "requestId": "REQ-BIG",
+  "orderId": "ORD-BIG",
+  "quantity": 1000
+}
+
+> {%
+    client.test("Reservation should fail", function () {
+        client.assert(response.body.success === false || response.status >= 400);
+    });
+%}
+
+############################################################
+### Final Inventory Level
+############################################################
+
+GET {{base}}/products/{{productId}}/level
+Authorization: Bearer {{token}}

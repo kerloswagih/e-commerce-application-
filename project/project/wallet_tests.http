@@ -1,0 +1,113 @@
+### Create User
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "test.user324@example.com",
+  "firstName": "Test",
+  "lastName": "User",
+  "password": "pass123"
+}
+
+> {%
+    client.global.set("userId", response.body.id);
+%}
+
+###
+
+### Create Wallet
+POST http://localhost:8080/api/v1/wallets
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "currency": "USD"
+}
+
+> {%
+    client.global.set("walletId", response.body.id);
+%}
+
+###
+
+### Get Wallet by ID
+GET http://localhost:8080/api/v1/wallets/{{walletId}}
+
+###
+
+### Get Wallet by User ID
+GET http://localhost:8080/api/v1/wallets/user/{{userId}}
+
+###
+
+### Get Balance
+GET http://localhost:8080/api/v1/wallets/{{walletId}}/balance
+
+###
+
+### Deposit Funds
+POST http://localhost:8080/api/v1/wallets/deposit
+Content-Type: application/json
+
+{
+  "walletId": {{walletId}},
+  "amount": 150.00,
+  "referenceId": "DEPOSIT_TEST"
+}
+
+> {%
+    client.global.set("depositId", response.body.id);
+%}
+
+###
+
+### Withdraw Funds
+POST http://localhost:8080/api/v1/wallets/withdraw
+Content-Type: application/json
+
+{
+  "walletId": {{walletId}},
+  "amount": 20.00,
+  "description": "Test withdrawal"
+}
+
+###
+
+### Create Payment
+POST http://localhost:8080/api/v1/wallets/{{walletId}}/payment?amount=50.00&referenceId=ORDER_TEST
+
+> {%
+    client.global.set("paymentId", response.body.id);
+%}
+
+###
+
+### Get Transaction
+GET http://localhost:8080/api/v1/transactions/{{paymentId}}
+
+###
+
+### Get Transaction History
+GET http://localhost:8080/api/v1/transactions/wallet/{{walletId}}?page=0&size=10
+
+###
+
+### Get Pending Count
+GET http://localhost:8080/api/v1/transactions/wallet/{{walletId}}/pending-count
+
+###
+
+### Complete Payment
+PUT http://localhost:8080/api/v1/wallets/payment/{{paymentId}}/complete
+
+###
+
+### Refund Payment
+POST http://localhost:8080/api/v1/wallets/payment/{{paymentId}}/refund
+
+###
+
+
+
+### Final Balance
+GET http://localhost:8080/api/v1/wallets/{{walletId}}/balance

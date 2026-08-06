@@ -1,0 +1,276 @@
+### --- GLOBAL VARIABLES ---
+@host = http://localhost:8084
+@authBase = {{host}}/v1/auth
+@userBase = {{host}}/v1/users
+@invBase = {{host}}/v1/inventory
+@walletBase = {{host}}/v1/wallets
+@transBase = {{host}}/v1/transactions
+@shopBase = {{host}}/v1/shop
+
+### --- AUTHENTICATION ---
+# Register
+POST {{authBase}}/register
+Content-Type: application/json
+
+{
+  "email": "test.user@example.com",
+  "firstName": "Test",
+  "lastName": "User",
+  "password": "pass123"
+}
+
+### Login
+POST {{authBase}}/login
+Content-Type: application/json
+
+{
+  "email": "test.user@example.com",
+  "password": "pass123"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+%}
+
+### --- USERS ---
+# Create User
+POST {{userBase}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "new.user@example.com",
+  "firstName": "New",
+  "lastName": "User",
+  "password": "pass123"
+}
+
+### Get All Users
+GET {{userBase}}
+Authorization: Bearer {{token}}
+
+### Get User by ID
+GET {{userBase}}/1
+Authorization: Bearer {{token}}
+
+### Get User by Email
+GET {{userBase}}/email/new.user@example.com
+Authorization: Bearer {{token}}
+
+### Update User
+PUT {{userBase}}/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "updated.user@example.com",
+  "firstName": "Updated",
+  "lastName": "User",
+  "password": "pass123"
+}
+
+### Delete User
+DELETE {{userBase}}/1
+Authorization: Bearer {{token}}
+
+### --- INVENTORY ---
+# Create Product
+POST {{invBase}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "SKU-123",
+  "name": "Test Item",
+  "description": "Test item description"
+}
+
+> {%
+    client.global.set("productId", response.body.id);
+%}
+
+### Get Product
+GET {{invBase}}/products/{{productId}}
+Authorization: Bearer {{token}}
+
+### Get Inventory Level
+GET {{invBase}}/products/{{productId}}/level
+Authorization: Bearer {{token}}
+
+### Reserve Product
+POST {{invBase}}/products/{{productId}}/reserve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+### Release Product
+POST {{invBase}}/products/{{productId}}/release
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 1
+}
+
+### Adjust Inventory
+POST {{invBase}}/products/{{productId}}/adjust
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### --- WALLET ---
+# Create Wallet (requires userId, e.g., 1)
+POST {{walletBase}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "currency": "USD"
+}
+
+> {%
+    client.global.set("walletId", response.body.id);
+%}
+
+### Get Wallet
+GET {{walletBase}}/{{walletId}}
+Authorization: Bearer {{token}}
+
+### Get Wallet by User ID
+GET {{walletBase}}/user/1
+Authorization: Bearer {{token}}
+
+### Get Wallet Balance
+GET {{walletBase}}/{{walletId}}/balance
+Authorization: Bearer {{token}}
+
+### Deposit
+POST {{walletBase}}/deposit
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "walletId": {{walletId}},
+  "amount": 100.00,
+  "referenceId": "ref-123"
+}
+
+### Withdraw
+POST {{walletBase}}/withdraw
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "walletId": {{walletId}},
+  "amount": 50.00,
+  "description": "Withdrawal"
+}
+
+### Create Payment
+POST {{walletBase}}/{{walletId}}/payment?amount=10.00&referenceId=order-123
+Authorization: Bearer {{token}}
+
+> {%
+    client.global.set("transactionId", response.body.id);
+%}
+
+### Complete Payment
+PUT {{walletBase}}/payment/{{transactionId}}/complete
+Authorization: Bearer {{token}}
+
+### Refund Payment
+POST {{walletBase}}/payment/{{transactionId}}/refund
+Authorization: Bearer {{token}}
+
+### --- TRANSACTIONS ---
+### Get Transaction by ID
+GET {{transBase}}/{{transactionId}}
+Authorization: Bearer {{token}}
+
+### Get Wallet History
+GET {{transBase}}/wallet/{{walletId}}
+Authorization: Bearer {{token}}
+
+### Get Pending Transactions
+GET {{transBase}}/wallet/{{walletId}}/pending
+Authorization: Bearer {{token}}
+
+### Count Pending Transactions
+GET {{transBase}}/wallet/{{walletId}}/pending-count
+Authorization: Bearer {{token}}
+
+### --- SHOP ---
+# List Products
+GET {{shopBase}}/products
+Authorization: Bearer {{token}}
+
+### Create Product (Shop)
+POST {{shopBase}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": {{productId}},
+  "price": 10.00
+}
+
+### Get Product (Shop)
+GET {{shopBase}}/products/{{productId}}
+Authorization: Bearer {{token}}
+
+### Add to Cart
+POST {{shopBase}}/cart/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "productId": {{productId}},
+  "quantity": 1
+}
+
+### Get Cart by User
+GET {{shopBase}}/cart/user/1
+Authorization: Bearer {{token}}
+
+### Remove from Cart
+POST {{shopBase}}/cart/remove
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "productId": {{productId}}
+}
+
+### Checkout
+POST {{shopBase}}/checkout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 1
+}
+
+> {%
+    client.global.set("orderId", response.body.orderId);
+%}
+
+### Get Order
+GET {{shopBase}}/orders/{{orderId}}
+Authorization: Bearer {{token}}
+
+### Get Order Items
+GET {{shopBase}}/orders/{{orderId}}/items
+Authorization: Bearer {{token}}
+
+### Get User Orders
+GET {{shopBase}}/orders/user/1
+Authorization: Bearer {{token}}

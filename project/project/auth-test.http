@@ -1,0 +1,93 @@
+### 1. REGISTRATION - Create a new user (returns JWT token)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "sami@example.com",
+  "firstName": "Sami",
+  "lastName": "Ali",
+  "password": "pass123",
+  "active": true
+}
+
+###
+### 2. REGISTRATION - Try to register with duplicate email (should fail)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "sami@example.com",
+  "firstName": "Sami2",
+  "lastName": "Ali2",
+  "password": "pass123",
+  "active": true
+}
+
+###
+### 3. LOGIN - Login with registered email and password (returns JWT token)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "sami@example.com",
+  "password": "pass123"
+}
+
+###
+### 4. LOGIN - Try login with wrong password (should fail)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "sami@example.com",
+  "password": "wrongpassword"
+}
+
+###
+### 5. LOGIN - Try login with non-existent email (should fail)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "pass123"
+}
+
+###
+### 6. CREATE USER (direct user creation)
+POST http://localhost:8080/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "ashraf@example.com",
+  "firstName": "Ashraf",
+  "lastName": "Ali",
+  "password": "secure123",
+  "active": true
+}
+
+###
+### 7. GET USER BY ID
+GET http://localhost:8080/api/v1/users/3
+
+###
+### 8. UPDATE USER - Update all fields
+PUT http://localhost:8080/api/v1/users/4
+Content-Type: application/json
+
+{
+  "email": "mariam.updated@example.com",
+  "firstName": "mariam",
+  "lastName": "amen",
+  "password": "newsecure456",
+  "active": true
+}
+
+###
+### 9. GET ALL USERS
+GET http://localhost:8080/api/v1/users
+
+###
+### 10. DELETE USER
+DELETE http://localhost:8080/api/v1/users/4
+

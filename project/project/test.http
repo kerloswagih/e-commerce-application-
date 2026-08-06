@@ -1,0 +1,29 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+###
+POST http://localhost:8080/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "sami@example.com",
+  "firstName": "Sami",
+  "lastName": "Ali",
+  "password": "pass123",
+  "active": true
+}
+###
+DELETE http://localhost:8080/api/v1/users/3
+
+###
+PUT http://localhost:8080/api/v1/users/4
+Content-Type: application/json
+
+{
+  "email": "ahmed.updated@example.com",
+  "firstName": "Ahmed",
+  "lastName": "Updated",
+  "password": "pass123",
+  "active": true
+  }
